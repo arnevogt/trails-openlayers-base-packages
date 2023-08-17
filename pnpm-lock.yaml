@@ -11,7 +11,7 @@ overrides:
 
 patchedDependencies:
   '@chakra-ui/toast@6.1.3':
-    hash: tqc2p3s2vcg3wsgorzlyl7tb7m
+    hash: juwlymlywkxlncs4zwusppopaa
     path: patches/@chakra-ui__toast@6.1.3.patch
 
 importers:
@@ -1307,7 +1307,7 @@ packages:
       '@chakra-ui/textarea': 2.0.19(@chakra-ui/system@2.5.7)(react@18.2.0)
       '@chakra-ui/theme': 3.1.1(@chakra-ui/styled-system@2.9.0)
       '@chakra-ui/theme-utils': 2.0.17
-      '@chakra-ui/toast': 6.1.3(patch_hash=tqc2p3s2vcg3wsgorzlyl7tb7m)(@chakra-ui/system@2.5.7)(framer-motion@10.12.16)(react-dom@18.2.0)(react@18.2.0)
+      '@chakra-ui/toast': 6.1.3(patch_hash=juwlymlywkxlncs4zwusppopaa)(@chakra-ui/system@2.5.7)(framer-motion@10.12.16)(react-dom@18.2.0)(react@18.2.0)
       '@chakra-ui/tooltip': 2.2.8(@chakra-ui/system@2.5.7)(framer-motion@10.12.16)(react-dom@18.2.0)(react@18.2.0)
       '@chakra-ui/transition': 2.0.16(framer-motion@10.12.16)(react@18.2.0)
       '@chakra-ui/utils': 2.0.15
@@ -1516,7 +1516,7 @@ packages:
       '@chakra-ui/styled-system': 2.9.0
       '@chakra-ui/theme-tools': 2.0.17(@chakra-ui/styled-system@2.9.0)
 
-  /@chakra-ui/toast@6.1.3(patch_hash=tqc2p3s2vcg3wsgorzlyl7tb7m)(@chakra-ui/system@2.5.7)(framer-motion@10.12.16)(react-dom@18.2.0)(react@18.2.0):
+  /@chakra-ui/toast@6.1.3(patch_hash=juwlymlywkxlncs4zwusppopaa)(@chakra-ui/system@2.5.7)(framer-motion@10.12.16)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-dsg/Sdkuq+SCwdOeyzrnBO1ecDA7VKfLFjUtj9QBc/SFEN8r+FQrygy79TNo+QWr7zdjI8icbl8nsp59lpb8ag==}
     peerDependencies:
       '@chakra-ui/system': 2.5.7

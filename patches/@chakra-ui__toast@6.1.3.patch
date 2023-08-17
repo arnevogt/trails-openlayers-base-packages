@@ -1,5 +1,5 @@
 diff --git a/dist/chunk-7LSF4IFR.mjs b/dist/chunk-7LSF4IFR.mjs
-index 8f98a44af2f7324d45856325a63758ffe1752192..ed838a3f50de7f461bdc151775863db32a49e80d 100644
+index 8f98a44af2f7324d45856325a63758ffe1752192..423de8a244a6ef7cbdd39f75061edad837c0e378 100644
 --- a/dist/chunk-7LSF4IFR.mjs
 +++ b/dist/chunk-7LSF4IFR.mjs
 @@ -52,7 +52,8 @@ var ToastComponent = memo((props) => {
@@ -17,20 +17,21 @@ index 8f98a44af2f7324d45856325a63758ffe1752192..ed838a3f50de7f461bdc151775863db3
          chakra.div,
          {
 -          role: "status",
-+          role: status === "error" ? "alert" : "status",
++          role: "alert",
            "aria-atomic": "true",
            className: "chakra-toast__inner",
            __css: containerStyles,
 diff --git a/dist/chunk-SBZF3S2Z.mjs b/dist/chunk-SBZF3S2Z.mjs
-index 8b4e57ea3329471a72a1d0a5457fb7d2c5478fd8..580b2b6f83c0ae5518c6f84fb653d49de9aad74f 100644
+index 8b4e57ea3329471a72a1d0a5457fb7d2c5478fd8..b67c838558ff8c3671ef5ebbc9eb4f231dae102f 100644
 --- a/dist/chunk-SBZF3S2Z.mjs
 +++ b/dist/chunk-SBZF3S2Z.mjs
-@@ -35,8 +35,6 @@ var ToastProvider = (props) => {
-     return /* @__PURE__ */ jsx(
+@@ -36,7 +36,8 @@ var ToastProvider = (props) => {
        "div",
        {
--        role: "region",
+         role: "region",
 -        "aria-live": "polite",
++        tabIndex: -1,
++        "aria-label": "Notifications",
          id: `chakra-toast-manager-${position}`,
          style: getToastListStyle(position),
          children: /* @__PURE__ */ jsx(AnimatePresence, { initial: false, children: toasts.map((toast) => /* @__PURE__ */ jsx(
