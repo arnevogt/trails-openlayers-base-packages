@@ -1,0 +1,36 @@
+diff --git a/dist/chunk-7LSF4IFR.mjs b/dist/chunk-7LSF4IFR.mjs
+index 8f98a44af2f7324d45856325a63758ffe1752192..ed838a3f50de7f461bdc151775863db32a49e80d 100644
+--- a/dist/chunk-7LSF4IFR.mjs
++++ b/dist/chunk-7LSF4IFR.mjs
+@@ -52,7 +52,8 @@ var ToastComponent = memo((props) => {
+     duration = 5e3,
+     containerStyle,
+     motionVariants = toastMotionVariants,
+-    toastSpacing = "0.5rem"
++    toastSpacing = "0.5rem",
++    status
+   } = props;
+   const [delay, setDelay] = useState(duration);
+   const isPresent = useIsPresent();
+@@ -103,7 +104,7 @@ var ToastComponent = memo((props) => {
+       children: /* @__PURE__ */ jsx(
+         chakra.div,
+         {
+-          role: "status",
++          role: status === "error" ? "alert" : "status",
+           "aria-atomic": "true",
+           className: "chakra-toast__inner",
+           __css: containerStyles,
+diff --git a/dist/chunk-SBZF3S2Z.mjs b/dist/chunk-SBZF3S2Z.mjs
+index 8b4e57ea3329471a72a1d0a5457fb7d2c5478fd8..580b2b6f83c0ae5518c6f84fb653d49de9aad74f 100644
+--- a/dist/chunk-SBZF3S2Z.mjs
++++ b/dist/chunk-SBZF3S2Z.mjs
+@@ -35,8 +35,6 @@ var ToastProvider = (props) => {
+     return /* @__PURE__ */ jsx(
+       "div",
+       {
+-        role: "region",
+-        "aria-live": "polite",
+         id: `chakra-toast-manager-${position}`,
+         style: getToastListStyle(position),
+         children: /* @__PURE__ */ jsx(AnimatePresence, { initial: false, children: toasts.map((toast) => /* @__PURE__ */ jsx(
