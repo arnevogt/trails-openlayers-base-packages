@@ -390,6 +390,10 @@ importers:
     publishDirectory: dist
 
   src/packages/legend:
+    dependencies:
+      '@open-pioneer/map':
+        specifier: workspace:^
+        version: link:../map
     devDependencies:
       '@open-pioneer/map-test-utils':
         specifier: workspace:^

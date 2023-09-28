@@ -6,7 +6,9 @@
     "scripts": {
         "build": "build-pioneer-package"
     },
-    "peerDependencies": {},
+    "peerDependencies": {
+        "@open-pioneer/map": "workspace:^"
+    },
     "devDependencies": {
         "@open-pioneer/test-utils": "^1.0.1",
         "@open-pioneer/map-test-utils": "workspace:^",
