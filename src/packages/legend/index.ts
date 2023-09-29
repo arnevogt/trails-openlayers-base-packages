@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // TODO: exported just for experiment
-export { getLegendImage } from "./getLegendImage";
+export { getLegendImage, type LegendInfo, type LegendImage } from "./getLegendImage";

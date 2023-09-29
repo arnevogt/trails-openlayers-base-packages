@@ -18,15 +18,15 @@ export class MapConfigProviderImpl implements MapConfigProvider {
                 zoom: 14
             },
             projection: "EPSG:25832",
-            layers: [
-                await createWMTSLayer()
-            ]
+            layers: [await createWMTSLayer()]
         };
     }
 }
 
 async function createWMTSLayer(): Promise<LayerConfig> {
-    const response = await fetch("https://www.wmts.nrw.de/geobasis/wmts_nw_landbedeckung/1.0.0/WMTSCapabilities.xml");
+    const response = await fetch(
+        "https://www.wmts.nrw.de/geobasis/wmts_nw_landbedeckung/1.0.0/WMTSCapabilities.xml"
+    );
     if (!response.ok) {
         throw new Error("Failed to load capabilities.");
     }
@@ -35,7 +35,7 @@ async function createWMTSLayer(): Promise<LayerConfig> {
     const wmtsParser = new WMTSCapabilities();
     const wmtsCapabilities = wmtsParser.read(responseText);
     const wmtsOptions = optionsFromCapabilities(wmtsCapabilities, {
-        layer: "wmts_nw_landbedeckung",
+        layer: "wmts_nw_landbedeckung"
     });
     if (!wmtsOptions) {
         throw new Error("Failed to parse wmts options from capabilities.");
@@ -43,6 +43,7 @@ async function createWMTSLayer(): Promise<LayerConfig> {
 
     const wmtsSource = new WMTS(wmtsOptions);
     return {
+        id: "wmts",
         title: "lden_gesamt_wmts",
         isBaseLayer: true,
         layer: new TileLayer({

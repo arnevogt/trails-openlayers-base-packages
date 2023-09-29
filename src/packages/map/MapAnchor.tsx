@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { Box, StyleProps } from "@open-pioneer/chakra-integration";
+import { Flex, StyleProps } from "@open-pioneer/chakra-integration";
 import classNames from "classnames";
 import { ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { useMapContext } from "./MapContext";
 import { MapPadding } from "./MapContainer";
+import { useMapContext } from "./MapContext";
 
 export type MapAnchorPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -45,8 +45,9 @@ export function MapAnchor(props: MapAnchorProps): JSX.Element {
     const { position = defaultPosition, className, children, horizontalGap, verticalGap } = props;
     const { padding, mapAnchorsHost } = useMapContext();
     return createPortal(
-        <Box
+        <Flex
             className={classNames("map-anchor", className)}
+            flexDirection="column"
             /* Overlay container uses pointer-events: none, this restores interactivity */
             pointerEvents="auto"
             /* Restore user-select: none set by ol-viewport parent */
@@ -54,7 +55,7 @@ export function MapAnchor(props: MapAnchorProps): JSX.Element {
             {...computePositionStyles(position, padding, horizontalGap, verticalGap)}
         >
             {children}
-        </Box>,
+        </Flex>,
         mapAnchorsHost
     );
 }

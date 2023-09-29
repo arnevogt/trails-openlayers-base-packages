@@ -2,7 +2,7 @@
 
 exports[`should successfully create a map anchor component 1`] = `
 <div
-  class="map-anchor css-3czzey"
+  class="map-anchor css-fbuh4m"
   data-theme="light"
 />
 `;

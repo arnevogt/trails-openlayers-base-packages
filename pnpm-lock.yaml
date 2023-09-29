@@ -388,9 +388,15 @@ importers:
 
   src/packages/legend:
     dependencies:
+      '@open-pioneer/core':
+        specifier: ^1.1.0
+        version: 1.1.0
       '@open-pioneer/map':
         specifier: workspace:^
         version: link:../map
+      ol:
+        specifier: ^8.1.0
+        version: 8.1.0
     devDependencies:
       '@open-pioneer/map-test-utils':
         specifier: workspace:^
@@ -683,6 +689,9 @@ importers:
       '@open-pioneer/initial-extent':
         specifier: workspace:^
         version: link:../../../packages/initial-extent
+      '@open-pioneer/legend':
+        specifier: workspace:^
+        version: link:../../../packages/legend
       '@open-pioneer/map':
         specifier: workspace:^
         version: link:../../../packages/map
