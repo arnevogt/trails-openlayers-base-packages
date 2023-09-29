@@ -54,7 +54,7 @@ function getWMTSLegend(layer: LayerModel, wmtsSource: WMTS): LegendImage | undef
  * The WMTS capabilities are assumed to have been parsed by OpenLayer's WMTS parser.
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function getWMTSLegendURL(
+export function getWMTSLegendURL(
     capabilities: Record<string, any>,
     activeLayerId: string | undefined,
     activeStyleId: string | undefined
