@@ -4,6 +4,10 @@ import { LayerModel } from "@open-pioneer/map";
 import { createLogger } from "@open-pioneer/core";
 import TileLayer from "ol/layer/Tile";
 import WMTS from "ol/source/WMTS";
+import VectorLayer from "ol/layer/Vector";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import Legend from "ol-ext/legend/Legend.js";
 
 const LOG = createLogger("legend:getLegendImage");
 
@@ -23,6 +27,53 @@ export function getLegendImage(layer: LayerModel): LegendImage | undefined {
         if (source instanceof WMTS) {
             return getWMTSLegend(layer, source);
         }
+    }
+
+    /**
+     * Uses ol-ext "getLegendImage" to crate images out of OL style objects
+     *
+     * todo only works if vectorLayer (or all individual features) has a style
+     *      --> no legend for layers and features without styles: convert default flat style to stlye?
+     *      (https://openlayers.org/en/latest/apidoc/module-ol_style_flat.html#~DefaultStyle)
+     *
+     * todo style might change during runtime --> need to rerender legend
+     *
+     * todo currently no labels for style icons are created
+     *
+     * todo it is possible to add multiple geometry types in one layer --> currently not considered
+     * todo features may have individual styles that differ from the layer ones --> currently not considered
+     * todo styles may be functions --> styles may differ with feature attributes
+     *
+     *     TODO: --> allow to configure "legendStyles" for each layer that will be used to create legend?
+     */
+    if (olLayer instanceof VectorLayer) {
+        const feature = olLayer.getSource().getFeatures()[0];
+        console.log(feature);
+
+        const style = olLayer.getStyle();
+
+        /**
+         *  Create an image out of an OL style object:
+         *  getLegendImage: creates a canvas using an OpenLayers style derived:
+         *    if feature is given:
+         *       tries to get style from feature (feature.getStyle()), else get style from item (item.style)
+         *      --> features do not have a style if the layer has a style --> apply layer style to LegendItem
+         *      (at least if feature as no individual style - however this is handled by getLegendImage function (see above))
+         *    if no feature is given but typeGeom: generates a fake feature without a style and applies the rules above
+         */
+        const canvas = Legend.getLegendImage({
+            title: "test",
+            //feature: feature.clone(),
+            typeGeom: "Point", // todo need to wait for features loaded (to derive typeGeom from first feature (see below)
+            //typeGeom: feature.getGeometry().getType(),
+            style: style ?? undefined
+        });
+        console.log(canvas.toDataURL());
+
+        return {
+            type: "image",
+            href: canvas.toDataURL()
+        };
     }
 
     LOG.debug("Cannot produce legend image for layer", layer);

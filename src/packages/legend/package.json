@@ -9,11 +9,12 @@
     "peerDependencies": {
         "@open-pioneer/core": "^1.1.0",
         "@open-pioneer/map": "workspace:^",
-        "ol": "^8.1.0"
+        "ol": "^8.1.0",
+        "ol-ext": "^4.0.11"
     },
     "devDependencies": {
-        "@open-pioneer/test-utils": "^1.0.1",
         "@open-pioneer/map-test-utils": "workspace:^",
+        "@open-pioneer/test-utils": "^1.0.1",
         "openlayers-base-packages": "workspace:*"
     },
     "publishConfig": {

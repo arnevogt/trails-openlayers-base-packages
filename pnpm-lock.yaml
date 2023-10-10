@@ -397,6 +397,9 @@ importers:
       ol:
         specifier: ^8.1.0
         version: 8.1.0
+      ol-ext:
+        specifier: ^4.0.11
+        version: 4.0.11(ol@8.1.0)
     devDependencies:
       '@open-pioneer/map-test-utils':
         specifier: workspace:^
@@ -5775,6 +5778,14 @@ packages:
       define-properties: 1.2.0
       es-abstract: 1.22.1
     dev: true
+
+  /ol-ext@4.0.11(ol@8.1.0):
+    resolution: {integrity: sha512-zorUn71RsahiA/kbf+tRDbv19wqdLCclxd3gkjsFMnqCbdgl+P59CSJCqMO4O7b2bvaHrw5FEmep7FNFnGGQXg==}
+    peerDependencies:
+      ol: '>= 5.3.0'
+    dependencies:
+      ol: 8.1.0
+    dev: false
 
   /ol@8.1.0:
     resolution: {integrity: sha512-cx3SH2plpFS9fM8pp1nCypgQXGJD7Mcb1E3mEySmy5XEw1DUEo+kkNzgtAZz5qupekqi7aU9iBJEjCoMfqvO2Q==}

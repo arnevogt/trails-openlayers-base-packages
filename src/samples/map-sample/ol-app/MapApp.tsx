@@ -116,12 +116,9 @@ function Legend(props: { mapId: string }) {
     const { mapId } = props;
     const { map } = useMapModel(mapId);
 
-    const layers = [];
+    let layers: LayerModel[] = [];
     if (map) {
-        const wmtsLayer = map.layers.getLayerById("wmts");
-        if (wmtsLayer) {
-            layers.push(wmtsLayer);
-        }
+        layers = map.layers.getAllLayers();
     }
 
     if (!layers.length) {
