@@ -5,9 +5,12 @@ import { createLogger } from "@open-pioneer/core";
 import TileLayer from "ol/layer/Tile";
 import WMTS from "ol/source/WMTS";
 import VectorLayer from "ol/layer/Vector";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import Legend from "ol-ext/legend/Legend.js";
+import { Type } from "ol/geom/Geometry";
+import { DEVICE_PIXEL_RATIO } from "ol/has";
+import { toContext } from "ol/render";
+import Style from "ol/style/Style";
+import { LineString, Point, Polygon } from "ol/geom";
+import { Feature } from "ol";
 
 const LOG = createLogger("legend:getLegendImage");
 
@@ -29,46 +32,40 @@ export function getLegendImage(layer: LayerModel): LegendImage | undefined {
         }
     }
 
-    /**
-     * Uses ol-ext "getLegendImage" to crate images out of OL style objects
-     *
-     * todo only works if vectorLayer (or all individual features) has a style
-     *      --> no legend for layers and features without styles: convert default flat style to stlye?
-     *      (https://openlayers.org/en/latest/apidoc/module-ol_style_flat.html#~DefaultStyle)
-     *
-     * todo style might change during runtime --> need to rerender legend
-     *
-     * todo currently no labels for style icons are created
-     *
-     * todo it is possible to add multiple geometry types in one layer --> currently not considered
-     * todo features may have individual styles that differ from the layer ones --> currently not considered
-     * todo styles may be functions --> styles may differ with feature attributes
-     *
-     *     TODO: --> allow to configure "legendStyles" for each layer that will be used to create legend?
-     */
     if (olLayer instanceof VectorLayer) {
-        const feature = olLayer.getSource().getFeatures()[0];
+        let feature = olLayer.getSource().getFeatures()[0]; // todo need to wait for features to be loaded or rerender legend
         console.log(feature);
 
-        const style = olLayer.getStyle();
+        // create fake feature for experiment (so that it is not needed to wait for features to be loaded)
+        feature = new Feature(new Point([0, 0]));
 
-        /**
-         *  Create an image out of an OL style object:
-         *  getLegendImage: creates a canvas using an OpenLayers style derived:
-         *    if feature is given:
-         *       tries to get style from feature (feature.getStyle()), else get style from item (item.style)
-         *      --> features do not have a style if the layer has a style --> apply layer style to LegendItem
-         *      (at least if feature as no individual style - however this is handled by getLegendImage function (see above))
-         *    if no feature is given but typeGeom: generates a fake feature without a style and applies the rules above
-         */
-        const canvas = Legend.getLegendImage({
-            title: "test",
-            //feature: feature.clone(),
-            typeGeom: "Point", // todo need to wait for features loaded (to derive typeGeom from first feature (see below)
-            //typeGeom: feature.getGeometry().getType(),
-            style: style ?? undefined
-        });
-        console.log(canvas.toDataURL());
+        const styleLike = olLayer.getStyle();
+
+        // create canvas
+        let canvas = document.createElement("canvas");
+        const margin = 10;
+        const size: [number, number] = [40, 25];
+        const width = size[0] + 2 * margin;
+        const height = size[1] + 2 * margin;
+        const ratio = DEVICE_PIXEL_RATIO;
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+
+        let style;
+        if (typeof styleLike == "function") {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            style = styleLike(feature); // todo also pass resolution
+        } else {
+            style = styleLike;
+        }
+        if (!style) {
+            console.warn("style not defined");
+            return;
+        }
+
+        // todo how to handle a styles array?
+        canvas = createLegendImageFromStyle("Point", style, canvas);
 
         return {
             type: "image",
@@ -195,3 +192,134 @@ export function getWMTSLegendURL(
     }
 }…
 */
+
+/**
+ * Code for VectorLayer legend generation
+ */
+
+type GeometryType = Exclude<Type, "GeometryCollection" | "LinearRing">;
+
+/**
+ * Create a legendImage for one or multiple OpenLayer Style object(s).
+ * Based on ol-ext "getLegendImage" function.
+ * @param geometryType
+ * @param style
+ * @param canvas
+ */
+export function createLegendImageFromStyle(
+    geometryType: GeometryType,
+    style: Style | Array<Style>,
+    canvas: HTMLCanvasElement
+): HTMLCanvasElement {
+    if (!geometryType || !style) return canvas; // todo error?
+
+    const margin = 10;
+    const size: [number, number] = [40, 25];
+    const width = size[0] + 2 * margin;
+    const height = size[1] + 2 * margin;
+    const ratio = DEVICE_PIXEL_RATIO;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return canvas; // todo error?
+    ctx.save();
+    const vectorContext = toContext(ctx, { pixelRatio: ratio });
+
+    if (!(style instanceof Array)) style = [style];
+
+    const cx = width / 2;
+    const cy = height / 2;
+    const sx = size[0] / 2;
+    const sy = size[1] / 2;
+
+    let i, s;
+
+    // todo only relevant for images in styles, however seems to only work with another image implementation from ol-ext
+    // Get point offset
+    /*if (geometryType === "Point") {
+        let extent = null;
+        for (i = 0; (s = style[i]); i++) {
+            const img = s.getImage();
+            // Refresh legend on image load
+            if (img) {
+                const imgElt = img.getPhoto ? img.getPhoto() : img.getImage();
+                // Check image is loaded
+                if (imgElt && imgElt instanceof HTMLImageElement && !imgElt.naturalWidth) {
+                    if (typeof item.onload === "function") {
+                        imgElt.addEventListener("load", function () {
+                            setTimeout(function () {
+                                item.onload();
+                            }, 100);
+                        });
+                    }
+                    img.load();
+                }
+                // Check anchor to center the image
+                if (img.getAnchor) {
+                    const anchor = img.getAnchor();
+                    if (anchor) {
+                        const si = img.getSize();
+                        const dx = anchor[0] - si[0];
+                        const dy = anchor[1] - si[1];
+                        if (!extent) {
+                            extent = [dx, dy, dx + si[0], dy + si[1]];
+                        } else {
+                            ol_extent_extend(extent, [dx, dy, dx + si[0], dy + si[1]]);
+                        }
+                    }
+                }
+            }
+        }
+        if (extent) {
+            cx = cx + (extent[2] + extent[0]) / 2;
+            cy = cy + (extent[3] + extent[1]) / 2;
+        }
+    }*/
+
+    // Draw image
+    for (i = 0; (s = style[i]); i++) {
+        vectorContext.setStyle(s);
+        ctx.save();
+        let geom;
+        switch (geometryType) {
+            case "Point":
+            case "MultiPoint": {
+                geom = new Point([cx, cy]);
+                break;
+            }
+            case "LineString":
+            case "MultiLineString": {
+                // Clip lines
+                ctx.rect(margin * ratio, 0, size[0] * ratio, canvas.height);
+                ctx.clip();
+                geom = new LineString([
+                    [cx - sx, cy],
+                    [cx + sx, cy]
+                ]);
+                break;
+            }
+            case "Polygon":
+            case "MultiPolygon": {
+                geom = new Polygon([
+                    [
+                        [cx - sx, cy - sy],
+                        [cx + sx, cy - sy],
+                        [cx + sx, cy + sy],
+                        [cx - sx, cy + sy],
+                        [cx - sx, cy - sy]
+                    ]
+                ]);
+                break;
+            }
+        }
+        if (s.getGeometryFunction()) {
+            geom = s.getGeometryFunction()(new Feature(geom));
+        }
+        if (!geom) return canvas; // todo error?
+        vectorContext.drawGeometry(geom);
+        ctx.restore();
+    }
+
+    ctx.restore();
+
+    return canvas;
+}
