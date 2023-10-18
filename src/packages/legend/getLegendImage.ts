@@ -8,9 +8,11 @@ import VectorLayer from "ol/layer/Vector";
 import { Type } from "ol/geom/Geometry";
 import { DEVICE_PIXEL_RATIO } from "ol/has";
 import { toContext } from "ol/render";
-import Style from "ol/style/Style";
+import Style, { StyleLike } from "ol/style/Style";
 import { LineString, Point, Polygon } from "ol/geom";
 import { Feature } from "ol";
+import ImageState from "ol/ImageState";
+import { extend } from "ol/extent";
 
 const LOG = createLogger("legend:getLegendImage");
 
@@ -39,8 +41,6 @@ export function getLegendImage(layer: LayerModel): LegendImage | undefined {
         // create fake feature for experiment (so that it is not needed to wait for features to be loaded)
         feature = new Feature(new Point([0, 0]));
 
-        const styleLike = olLayer.getStyle();
-
         // create canvas
         let canvas = document.createElement("canvas");
         const margin = 10;
@@ -51,21 +51,17 @@ export function getLegendImage(layer: LayerModel): LegendImage | undefined {
         canvas.width = width * ratio;
         canvas.height = height * ratio;
 
-        let style;
+        let styleLike: StyleLike | null | undefined | void = olLayer.getStyle();
         if (typeof styleLike == "function") {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            style = styleLike(feature); // todo also pass resolution
-        } else {
-            style = styleLike;
+            styleLike = styleLike(feature, 0); // todo also pass resolution
         }
-        if (!style) {
+        if (!styleLike) {
             console.warn("style not defined");
             return;
         }
+        canvas = createLegendImageFromStyle("Point", styleLike, canvas);
 
-        // todo how to handle a styles array?
-        canvas = createLegendImageFromStyle("Point", style, canvas);
+        console.log(canvas.toDataURL());
 
         return {
             type: "image",
@@ -203,16 +199,20 @@ type GeometryType = Exclude<Type, "GeometryCollection" | "LinearRing">;
  * Create a legendImage for one or multiple OpenLayer Style object(s).
  * Based on ol-ext "getLegendImage" function.
  * @param geometryType
- * @param style
+ * @param styles
  * @param canvas
  */
+// TODO: tests
+// TODO: does the creation work if "renderer" is used in style
+// TODO: add license hint
 export function createLegendImageFromStyle(
     geometryType: GeometryType,
-    style: Style | Array<Style>,
+    styles: Style | Style[],
     canvas: HTMLCanvasElement
 ): HTMLCanvasElement {
-    if (!geometryType || !style) return canvas; // todo error?
+    if (!geometryType || !styles) return canvas; // TODO: error?
 
+    // TODO: is the size of the input canvas considered?
     const margin = 10;
     const size: [number, number] = [40, 25];
     const width = size[0] + 2 * margin;
@@ -220,34 +220,32 @@ export function createLegendImageFromStyle(
     const ratio = DEVICE_PIXEL_RATIO;
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return canvas; // todo error?
+    if (!ctx) return canvas; // TODO error?
     ctx.save();
     const vectorContext = toContext(ctx, { pixelRatio: ratio });
 
-    if (!(style instanceof Array)) style = [style];
+    if (!(styles instanceof Array)) styles = [styles];
 
-    const cx = width / 2;
-    const cy = height / 2;
+    let cx = width / 2;
+    let cy = height / 2;
     const sx = size[0] / 2;
     const sy = size[1] / 2;
 
     let i, s;
-
-    // todo only relevant for images in styles, however seems to only work with another image implementation from ol-ext
     // Get point offset
-    /*if (geometryType === "Point") {
+    if (geometryType === "Point") {
         let extent = null;
-        for (i = 0; (s = style[i]); i++) {
+        for (i = 0; (s = styles[i]); i++) {
             const img = s.getImage();
             // Refresh legend on image load
             if (img) {
-                const imgElt = img.getPhoto ? img.getPhoto() : img.getImage();
                 // Check image is loaded
-                if (imgElt && imgElt instanceof HTMLImageElement && !imgElt.naturalWidth) {
-                    if (typeof item.onload === "function") {
-                        imgElt.addEventListener("load", function () {
+                loadImageStyles(styles); // TODO: wait for / rerender legend
+                if (img && img instanceof HTMLImageElement && !img.naturalWidth) {
+                    if (typeof img.onload === "function") {
+                        img.addEventListener("load", function () {
                             setTimeout(function () {
-                                item.onload();
+                                // item.onload(); todo rerender legend?
                             }, 100);
                         });
                     }
@@ -256,27 +254,48 @@ export function createLegendImageFromStyle(
                 // Check anchor to center the image
                 if (img.getAnchor) {
                     const anchor = img.getAnchor();
-                    if (anchor) {
-                        const si = img.getSize();
-                        const dx = anchor[0] - si[0];
-                        const dy = anchor[1] - si[1];
-                        if (!extent) {
-                            extent = [dx, dy, dx + si[0], dy + si[1]];
-                        } else {
-                            ol_extent_extend(extent, [dx, dy, dx + si[0], dy + si[1]]);
+                    if (anchor?.length > 1 && anchor[0] != undefined && anchor[1] != undefined) {
+                        const size = img.getSize();
+                        if (size?.length > 1 && size[0] != undefined && size[1] != undefined) {
+                            const dx = anchor[0] - size[0];
+                            const dy = anchor[1] - size[1];
+                            if (!extent) {
+                                extent = [dx, dy, dx + size[0], dy + size[1]];
+                            } else {
+                                extend(extent, [dx, dy, dx + size[0], dy + size[1]]);
+                            }
+                        }
+                    } else {
+                        const size = img.getSize();
+                        if (size?.length > 1 && size[0] != undefined && size[1] != undefined) {
+                            const dx = size[0];
+                            const dy = size[1];
+                            if (!extent) {
+                                extent = [dx, dy, dx + size[0], dy + size[1]];
+                            } else {
+                                extend(extent, [dx, dy, dx + size[0], dy + size[1]]);
+                            }
                         }
                     }
                 }
             }
         }
-        if (extent) {
+        if (
+            extent &&
+            extent.length > 2 &&
+            extent[0] != undefined &&
+            extent[1] != undefined &&
+            extent[2] != undefined &&
+            extent[3] != undefined
+        ) {
             cx = cx + (extent[2] + extent[0]) / 2;
             cy = cy + (extent[3] + extent[1]) / 2;
         }
-    }*/
+    }
+    // TODO: if using an image in the style, the image is clipped off -> canvas seems to be to small
 
     // Draw image
-    for (i = 0; (s = style[i]); i++) {
+    for (i = 0; (s = styles[i]); i++) {
         vectorContext.setStyle(s);
         ctx.save();
         let geom;
@@ -322,4 +341,21 @@ export function createLegendImageFromStyle(
     ctx.restore();
 
     return canvas;
+}
+
+// TODO WIP
+function loadImageStyles(styles: Style[]) {
+    styles.forEach((style) => {
+        let loading = false; // todo promise?
+        const imageStyle = style.getImage();
+        if (imageStyle) {
+            const imageState = imageStyle.getImageState();
+            if (!(imageState == ImageState.LOADED || imageState == ImageState.ERROR)) {
+                if (imageState == ImageState.IDLE) {
+                    imageStyle.load();
+                }
+                loading = true;
+            }
+        }
+    });
 }

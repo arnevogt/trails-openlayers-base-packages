@@ -7,7 +7,8 @@ import WMTS, { optionsFromCapabilities } from "ol/source/WMTS";
 import VectorSource from "ol/source/Vector";
 import { GeoJSON } from "ol/format";
 import VectorLayer from "ol/layer/Vector";
-import { Circle, Fill, Style } from "ol/style";
+import Style from "ol/style/Style";
+import { Circle, Fill } from "ol/style";
 
 export const MAP_ID = "main";
 
@@ -76,14 +77,40 @@ function createHaltestellenLayer() {
 
     return new VectorLayer({
         source: geojsonSource,
+        // TODO remove test code (different styles for testing)
         /* style: new Style({
-            image: new Circle({
-                radius: 5,
-                fill: new Fill({
-                    color: "red"
-                })
+            image: new Icon({
+                /!* anchor: [0.5, 46],
+                anchorXUnits: "fraction",
+                anchorYUnits: "pixels",*!/
+                src: "./ol-app/assets/marker.png"
             })
         })*/
+        /*  style: new Style({
+            image: new Icon({
+                anchor: [0, 0],
+                src: "./ol-app/assets/marker.png"
+            })
+        })*/
+        /*  style: [
+            new Style({
+                image: new Circle({
+                    radius: 5,
+                    fill: new Fill({
+                        color: "red"
+                    })
+                })
+            }),
+            new Style({
+                image: new Circle({
+                    radius: 5,
+                    stroke: new Stroke({
+                        color: "blue",
+                        width: 2
+                    })
+                })
+            })
+        ]*/
         style: (feature, resolution) => {
             const style = new Style();
             const verkehrsmittel = feature.get("verkehrsmittel");
