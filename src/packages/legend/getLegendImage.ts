@@ -51,6 +51,16 @@ export function getLegendImage(layer: LayerModel): LegendImage | undefined {
         canvas.width = width * ratio;
         canvas.height = height * ratio;
 
+        /**
+         * The idea is to use the "createLegendImageFromStyle" method to create images/canvas for OL Styles.
+         *
+         * The method uses fake features to create the images. Thus, it is not suitable to use it for OL StyleFunctions.
+         * Hence, if the style of the layer is a StyleFunction it needs to be called with an actual feature (or with multiple features)
+         * to create one or multiple styles that will then be used as an input for the createLegendImageFromStyle.
+         *
+         * Additionally, the createLegendImageFromStyle method accepts an input canvas that will be completed for the style.
+         */
+
         let styleLike: StyleLike | null | undefined | void = olLayer.getStyle();
         if (typeof styleLike == "function") {
             styleLike = styleLike(feature, 0); // todo also pass resolution
